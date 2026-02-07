@@ -2,16 +2,49 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#667eea" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Phone Tracker" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%23667eea' width='180' height='180'/><text x='50%' y='50%' font-size='90' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central'>📱</text></svg>" />
     <meta
       name="description"
-      content="Phone Tracker - Real-time device location tracking"
+      content="Phone Tracker - Real-time device location tracking like Samsung Find My Mobile"
     />
-    <title>Phone Tracker</title>
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>Phone Tracker - Find My Phone</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    <script>
+      // Register Service Worker for background tracking
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('%PUBLIC_URL%/service-worker.js')
+            .then(registration => {
+              console.log('Service Worker registered:', registration);
+              
+              // Request periodic background sync if available
+              if ('periodicSync' in registration) {
+                registration.periodicSync.register('update-location', {
+                  minInterval: 60 * 1000 // Update every minute
+                }).catch(error => {
+                  console.log('Periodic sync registration failed:', error);
+                });
+              }
+              
+              // Request one-time background sync
+              if ('sync' in registration) {
+                registration.sync.register('sync-location').catch(error => {
+                  console.log('Background sync registration failed:', error);
+                });
+              }
+            })
+            .catch(error => console.log('Service Worker registration failed:', error));
+        });
+      }
+    </script>
   </body>
 </html>

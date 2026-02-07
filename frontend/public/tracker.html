@@ -1,409 +1,401 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phone Tracker - Location Service</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    .container {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      padding: 40px;
-      max-width: 500px;
-      width: 100%;
-    }
-
-    h1 {
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 28px;
-    }
-
-    .subtitle {
-      color: #666;
-      margin-bottom: 30px;
-      font-size: 14px;
-    }
-
-    .status {
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    .status.waiting {
-      background: #fff3cd;
-      color: #856404;
-      border: 1px solid #ffeaa7;
-    }
-
-    .status.tracking {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-
-    .status.error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-
-    .info-box {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      border-left: 4px solid #667eea;
-    }
-
-    .info-box p {
-      color: #333;
-      font-size: 13px;
-      line-height: 1.6;
-      margin: 8px 0;
-    }
-
-    .info-box strong {
-      color: #667eea;
-    }
-
-    .device-name {
-      background: #f0f0f0;
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 20px;
-      font-size: 14px;
-    }
-
-    .device-name label {
-      display: block;
-      color: #666;
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
-
-    .device-name input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-
-    .location-data {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-size: 13px;
-      display: none;
-    }
-
-    .location-data.active {
-      display: block;
-    }
-
-    .location-data p {
-      margin: 8px 0;
-      color: #333;
-      font-family: 'Courier New', monospace;
-    }
-
-    .location-data p strong {
-      color: #667eea;
-      min-width: 100px;
-      display: inline-block;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .btn-start {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-
-    .btn-start:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    }
-
-    .btn-stop {
-      background: #ff6b6b;
-      color: white;
-    }
-
-    .btn-stop:hover:not(:disabled) {
-      background: #ff5252;
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .footer {
-      text-align: center;
-      color: #999;
-      font-size: 12px;
-      margin-top: 20px;
-    }
-
-    .emoji {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    @media (max-width: 600px) {
-      .container {
-        padding: 30px 20px;
-      }
-
-      h1 {
-        font-size: 22px;
-      }
-
-      .buttons {
-        flex-direction: column;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="emoji">📍</div>
-    <h1>Phone Tracker</h1>
-    <p class="subtitle">Real-time Location Service</p>
-
-    <div id="status" class="status waiting">
-      ⏳ Initializing...
-    </div>
-
-    <div class="info-box">
-      <p>✅ This device will continuously send its GPS location to the tracking server</p>
-      <p>📡 Location updates every 10 seconds</p>
-      <p>🔒 Make sure location permission is enabled in your browser</p>
-    </div>
-
-    <div class="device-name">
-      <label>Device Name</label>
-      <input type="text" id="deviceName" placeholder="e.g., My iPhone">
-    </div>
-
-    <div class="location-data" id="locationData">
-      <p><strong>Device ID:</strong> <span id="deviceId">-</span></p>
-      <p><strong>Latitude:</strong> <span id="latitude">-</span></p>
-      <p><strong>Longitude:</strong> <span id="longitude">-</span></p>
-      <p><strong>Accuracy:</strong> <span id="accuracy">-</span>m</p>
-      <p><strong>Last Update:</strong> <span id="lastUpdate">-</span></p>
-    </div>
-
-    <div class="buttons">
-      <button class="btn-start" id="startBtn" onclick="startTracking()">Start Tracking</button>
-      <button class="btn-stop" id="stopBtn" onclick="stopTracking()" disabled>Stop Tracking</button>
-    </div>
-
-    <div class="footer">
-      <p>Server: <span id="serverAddress">localhost:5000</span></p>
-    </div>
-  </div>
-
-  <script>
-    const SERVER_URL = 'https://phone-track-production-16be.up.railway.app';
-    
-    document.getElementById('serverAddress').textContent = SERVER_URL.replace('https://', '');
-
-    let DEVICE_ID = localStorage.getItem('deviceId');
-    let DEVICE_NAME = localStorage.getItem('deviceName') || '';
-    let watchId = null;
-    let isTracking = false;
-
-    // Set initial values
-    if (DEVICE_ID) {
-      document.getElementById('deviceName').value = DEVICE_NAME;
-      document.getElementById('deviceId').textContent = DEVICE_ID;
-    }
-
-    document.getElementById('deviceName').addEventListener('change', function(e) {
-      DEVICE_NAME = e.target.value || 'My Device';
-      localStorage.setItem('deviceName', DEVICE_NAME);
-    });
-
-    async function registerDevice() {
-      try {
-        const response = await fetch(`${SERVER_URL}/api/devices/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            deviceId: DEVICE_ID,
-            deviceName: DEVICE_NAME || 'My Device'
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to register device');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tracker">
+    <meta name="theme-color" content="#667eea">
+    <title>Phone Tracker - Keep Location Active</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        return await response.json();
-      } catch (error) {
-        console.error('Registration error:', error);
-        setStatus('❌ Failed to register device', 'error');
-        return null;
-      }
-    }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-    function startTracking() {
-      const deviceNameInput = document.getElementById('deviceName').value.trim();
-      if (!deviceNameInput) {
-        alert('Please enter a device name first');
-        return;
-      }
+        .tracker-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
 
-      if (!DEVICE_ID) {
-        DEVICE_ID = `device_${Date.now()}`;
-        localStorage.setItem('deviceId', DEVICE_ID);
-      }
+        .tracker-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse-icon 2s infinite;
+        }
 
-      DEVICE_NAME = deviceNameInput;
-      localStorage.setItem('deviceName', DEVICE_NAME);
+        @keyframes pulse-icon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
 
-      // Check if geolocation is available
-      if (!('geolocation' in navigator)) {
-        setStatus('❌ Geolocation not supported by this browser', 'error');
-        return;
-      }
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
 
-      // Register device first
-      registerDevice().then(() => {
-        setStatus('📍 Requesting location permission...', 'tracking');
+        .status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 30px;
+            font-size: 16px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: status-pulse 1.5s infinite;
+        }
+
+        @keyframes status-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .info-box {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #999;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .start-btn:active {
+            transform: scale(0.98);
+        }
+
+        .stop-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .stop-btn:active {
+            transform: scale(0.98);
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .permission-notice {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .tracking-active {
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 10px 40px rgba(102, 126, 234, 0.2); }
+            50% { box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4); }
+        }
+    </style>
+</head>
+<body>
+    <div class="tracker-container" id="trackerContainer">
+        <div class="tracker-icon">📱</div>
+        <h1>Location Tracker</h1>
         
-        // Request permission with high accuracy
-        const options = {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        };
+        <div class="status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Ready to track</span>
+        </div>
 
-        // First, try to get one location
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            // Permission granted! Now start continuous tracking
-            startContinuousTracking(options);
-          },
-          (error) => {
-            // Permission denied or error
-            if (error.code === error.PERMISSION_DENIED) {
-              setStatus('❌ Location permission denied. Please enable it in browser settings:', 'error');
-            } else if (error.code === error.POSITION_UNAVAILABLE) {
-              setStatus('❌ Location data unavailable. Turn on location services.', 'error');
-            } else if (error.code === error.TIMEOUT) {
-              setStatus('❌ Location request timed out. Check signal strength.', 'error');
-            } else {
-              setStatus(`❌ ${error.message}`, 'error');
+        <div class="permission-notice">
+            ⚠️ Keep this page open or minimize the app. Your phone will keep sending location data to the server.
+        </div>
+
+        <div class="info-box">
+            <div class="info-item">
+                <span class="info-label">Device:</span>
+                <span class="info-value" id="deviceName">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Latitude:</span>
+                <span class="info-value" id="latitude">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Longitude:</span>
+                <span class="info-value" id="longitude">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Accuracy:</span>
+                <span class="info-value" id="accuracy">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Updates:</span>
+                <span class="info-value" id="updateCount">0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Last Update:</span>
+                <span class="info-value" id="lastUpdate">-</span>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="start-btn" id="startBtn">Start Tracking</button>
+            <button class="stop-btn" id="stopBtn">Stop Tracking</button>
+        </div>
+
+        <div class="error" id="errorBox"></div>
+    </div>
+
+    <script>
+        const SERVER_URL = 'https://phone-track-production-16be.up.railway.app';
+        let watchId = null;
+        let updateCount = 0;
+        let isTracking = false;
+
+        function initializeDevice() {
+            let deviceId = localStorage.getItem('deviceId');
+            let deviceName = localStorage.getItem('deviceName');
+
+            if (!deviceId) {
+                deviceId = 'device-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                deviceName = 'Phone ' + new Date().toLocaleDateString();
+                localStorage.setItem('deviceId', deviceId);
+                localStorage.setItem('deviceName', deviceName);
             }
-          },
-          options
-        );
-      });
-    }
 
-    function startContinuousTracking(options) {
-      isTracking = true;
-      setStatus('✅ Tracking active. Sending location every 10 seconds...', 'tracking');
-      document.getElementById('startBtn').disabled = true;
-      document.getElementById('stopBtn').disabled = false;
-      document.getElementById('deviceName').disabled = true;
+            document.getElementById('deviceName').textContent = deviceName;
+            return { deviceId, deviceName };
+        }
 
-      watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const { latitude, longitude, accuracy } = position.coords;
-          
-          // Update UI
-          document.getElementById('latitude').textContent = latitude.toFixed(6);
-          document.getElementById('longitude').textContent = longitude.toFixed(6);
-          document.getElementById('accuracy').textContent = Math.round(accuracy);
-          document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
-          document.getElementById('locationData').classList.add('active');
+        async function registerDevice(deviceId, deviceName) {
+            try {
+                const response = await fetch(`${SERVER_URL}/api/devices/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ deviceId, deviceName })
+                });
+                
+                if (!response.ok) throw new Error('Registration failed');
+                console.log('Device registered:', deviceId);
+                return true;
+            } catch (error) {
+                console.error('Device registration error:', error);
+                return false;
+            }
+        }
 
-          // Send to server
-          fetch(`${SERVER_URL}/api/locations/update`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              deviceId: DEVICE_ID,
-              latitude,
-              longitude,
-              accuracy
-            })
-          })
-          .then(res => res.json())
-          .then(data => console.log('✅ Location sent:', { latitude, longitude }))
-          .catch(err => console.error('❌ Error sending location:', err));
-        },
-        (error) => {
-          console.error('Tracking error:', error);
-          setStatus(`❌ Tracking error: ${error.message}`, 'error');
-        },
-        options
-      );
-    }
+        async function updateLocation(lat, lng, accuracy) {
+            try {
+                const response = await fetch(`${SERVER_URL}/api/locations/update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        deviceId: localStorage.getItem('deviceId'),
+                        latitude: lat,
+                        longitude: lng,
+                        accuracy: accuracy,
+                        timestamp: new Date().toISOString()
+                    })
+                });
 
-    function stopTracking() {
-      if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
-      }
-      isTracking = false;
-      setStatus('⏹️ Tracking stopped', 'waiting');
-      document.getElementById('startBtn').disabled = false;
-      document.getElementById('stopBtn').disabled = true;
-      document.getElementById('deviceName').disabled = false;
-    }
+                if (response.ok) {
+                    updateCount++;
+                    document.getElementById('updateCount').textContent = updateCount;
+                    document.getElementById('latitude').textContent = lat.toFixed(6);
+                    document.getElementById('longitude').textContent = lng.toFixed(6);
+                    document.getElementById('accuracy').textContent = '±' + Math.round(accuracy) + 'm';
+                    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+                }
+            } catch (error) {
+                console.error('Location update error:', error);
+            }
+        }
 
-    function setStatus(message, type) {
-      const statusEl = document.getElementById('status');
-      statusEl.textContent = message;
-      statusEl.className = `status ${type}`;
-    }
+        function showError(message) {
+            const errorBox = document.getElementById('errorBox');
+            errorBox.textContent = message;
+            errorBox.classList.add('show');
+            setTimeout(() => errorBox.classList.remove('show'), 5000);
+        }
 
-    // Auto-start if previously tracking
-    if (localStorage.getItem('autoTrack') === 'true' && DEVICE_ID) {
-      setTimeout(() => startTracking(), 500);
-    }
-  </script>
+        function startTracking() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        startContinuousTracking();
+                    },
+                    (error) => {
+                        let message = 'Unable to get location. ';
+                        if (error.code === error.PERMISSION_DENIED) {
+                            message += 'Please enable location permissions.';
+                        } else if (error.code === error.POSITION_UNAVAILABLE) {
+                            message += 'Location information unavailable.';
+                        } else {
+                            message += 'Error: ' + error.message;
+                        }
+                        showError(message);
+                    }
+                );
+            } else {
+                showError('Geolocation not supported on this device');
+            }
+        }
+
+        function startContinuousTracking() {
+            if (isTracking) return;
+            
+            const touchable = document.getElementById('trackerContainer');
+            touchable.classList.add('tracking-active');
+            document.getElementById('statusText').textContent = '🟢 Live Tracking Active';
+            document.getElementById('startBtn').disabled = true;
+            isTracking = true;
+
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude, accuracy } = position.coords;
+                    updateLocation(latitude, longitude, accuracy);
+                },
+                (error) => {
+                    console.error('Tracking error:', error);
+                    if (error.code === error.PERMISSION_DENIED) {
+                        stopTracking();
+                        showError('Location permission denied. Tracking stopped.');
+                    }
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 30000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        function stopTracking() {
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+
+            const touchable = document.getElementById('trackerContainer');
+            touchable.classList.remove('tracking-active');
+            document.getElementById('statusText').textContent = 'Tracking stopped';
+            document.getElementById('startBtn').disabled = false;
+            isTracking = false;
+        }
+
+        document.getElementById('startBtn').addEventListener('click', startTracking);
+        document.getElementById('stopBtn').addEventListener('click', stopTracking);
+
+        window.addEventListener('load', async () => {
+            const { deviceId, deviceName } = initializeDevice();
+            await registerDevice(deviceId, deviceName);
+            startTracking();
+        });
+
+        if (navigator.wakeLock) {
+            document.addEventListener('visibilitychange', async () => {
+                if (!document.hidden && isTracking) {
+                    try {
+                        await navigator.wakeLock.request('screen');
+                    } catch (err) {
+                        console.log('Wake Lock failed:', err);
+                    }
+                }
+            });
+        }
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js').catch(err => {
+                console.log('Service Worker registration failed:', err);
+            });
+        }
+
+        window.addEventListener('beforeunload', (e) => {
+            if (isTracking) {
+                e.preventDefault();
+                e.returnValue = 'Tracking is active. Leave page?';
+            }
+        });
+    </script>
 </body>
 </html>
