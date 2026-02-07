@@ -415,7 +415,10 @@ body {
   margin-top: 4px;
 }
 
-/* Responsiv80px;
+/* Responsive */
+@media (max-width: 768px) {
+  .left-panel {
+    width: 280px;
   }
 
   .app-header h1 {
@@ -448,9 +451,6 @@ body {
   }
 
   .app-header p {
-    font-size: 12px
-
-  .right-panel {
-    flex: 1;
+    font-size: 12px;
   }
 }
