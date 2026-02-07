@@ -11,6 +11,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [newDeviceName, setNewDeviceName] = useState('');
   const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const fetchDevices = useCallback(async () => {
     try {
@@ -82,7 +83,11 @@ function App() {
       </header>
 
       <div className="container">
-        <div className="left-panel">
+        <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)} title="Toggle sidebar">
+          ☰
+        </button>
+        
+        <div className={`left-panel ${sidebarOpen ? 'open' : 'closed'}`}>
           <div className="registration-section">
             <h2>Register New Device</h2>
             <input
