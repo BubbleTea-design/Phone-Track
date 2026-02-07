@@ -43,6 +43,23 @@ const Map = ({ device, apiUrl }) => {
     }
   }, [device.deviceId, apiUrl]);
 
+  // Custom current location icon - large blue circle
+  const currentLocationIcon = L.divIcon({
+    html: `<div style="
+      background-color: #4285F4;
+      border: 3px solid white;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      box-shadow: 0 0 0 8px rgba(66, 133, 244, 0.2);
+      animation: pulse 2s infinite;
+    "></div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -16],
+    className: 'current-location-icon'
+  });
+
   useEffect(() => {
     fetchLocationHistory();
     const interval = setInterval(fetchLocationHistory, 5000);
@@ -88,9 +105,9 @@ const Map = ({ device, apiUrl }) => {
           <Circle
             center={[lat, lng]}
             radius={currentLocation.accuracy}
-            fillColor="#667eea"
-            fillOpacity={0.15}
-            color="#667eea"
+            fillColor="#4285F4"
+            fillOpacity={0.2}
+            color="#4285F4"
             weight={2}
             dashArray="5, 5"
           />
@@ -124,15 +141,17 @@ const Map = ({ device, apiUrl }) => {
           </Marker>
         ))}
 
-        {/* Current location marker */}
-        <Marker position={[lat, lng]} icon={currentIcon}>
+        {/* Current location marker - large pulsing blue dot */}
+        <Marker position={[lat, lng]} icon={currentLocationIcon}>
           <Popup>
             <div className="popup-content">
-              <strong>📍 {device.deviceName} (Current)</strong>
+              <strong>📍 You are here</strong>
               <br />
-              Lat: {lat.toFixed(5)}, Lng: {lng.toFixed(5)}
+              <strong>{device.deviceName}</strong>
               <br />
-              <small>{currentLocation.timestamp && new Date(currentLocation.timestamp).toLocaleTimeString()}</small>
+              Lat: {lat.toFixed(6)}, Lng: {lng.toFixed(6)}
+              <br />
+              <small>Accuracy: ±{Math.round(currentLocation.accuracy)}m</small>
             </div>
           </Popup>
         </Marker>
