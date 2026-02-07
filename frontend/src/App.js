@@ -25,7 +25,7 @@ function App() {
       setError('Failed to fetch devices');
       console.error(err);
     }
-  }, [selectedDevice, API_URL]);
+  }, [selectedDevice]);
 
   // Fetch devices on mount
   useEffect(() => {

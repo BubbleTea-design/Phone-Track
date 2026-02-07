@@ -21,7 +21,7 @@ const Map = ({ device, apiUrl }) => {
     } catch (err) {
       console.error('Failed to fetch location history:', err);
     }
-  }, [device.deviceId, apiUrl]);
+  }, [device.deviceId]);
 
   useEffect(() => {
     fetchLocationHistory();
