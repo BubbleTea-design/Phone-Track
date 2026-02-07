@@ -1,35 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import axios from 'axios';
-
-// Fix Leaflet default icons
-delete L.Icon.Default.prototype._getIconUrl;
-const currentIcon = L.icon({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [32, 41],
-  iconAnchor: [16, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-const historyIcon = L.icon({
-  iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: currentIcon.options.iconRetinaUrl,
-  iconUrl: currentIcon.options.iconUrl,
-  shadowUrl: currentIcon.options.shadowUrl
-});
 
 const Map = ({ device, apiUrl }) => {
   const [locationHistory, setLocationHistory] = useState([]);
@@ -65,17 +37,6 @@ const Map = ({ device, apiUrl }) => {
       left: 50%;
       transform: translate(-50%, -50%);
     "></div></div>`,
-
-  // Auto-center map on current location updates
-  useEffect(() => {
-    if (mapRef.current && currentLocation && currentLocation.latitude && currentLocation.longitude) {
-      const newCenter = [currentLocation.latitude, currentLocation.longitude];
-      if (Math.abs(mapRef.current.getCenter().lat - newCenter[0]) > 0.0001 || 
-          Math.abs(mapRef.current.getCenter().lng - newCenter[1]) > 0.0001) {
-        mapRef.current.setView(newCenter, 17, { animate: true, duration: 1 });
-      }
-    }
-  }, [currentLocation]);
     iconSize: [48, 48],
     iconAnchor: [24, 24],
     popupAnchor: [0, -24],
@@ -84,17 +45,18 @@ const Map = ({ device, apiUrl }) => {
 
   useEffect(() => {
     fetchLocationHistory();
-    conscenterOnLocation = () => {
-    if (mapRef.current && currentLocation && currentLocation.latitude && currentLocation.longitude) {
-      mapRef.current.setView([currentLocation.latitude, currentLocation.longitude], 17, { animate: true, duration: 1 });
-    }
-  }
+    const interval = setInterval(fetchLocationHistory, 5000);
     return () => clearInterval(interval);
   }, [fetchLocationHistory]);
 
-
-
   const currentLocation = device.lastLocation;
+
+  // Center map on current location
+  const centerOnLocation = () => {
+    if (mapRef.current && currentLocation && currentLocation.latitude && currentLocation.longitude) {
+      mapRef.current.setView([currentLocation.latitude, currentLocation.longitude], 17, { animate: true, duration: 1 });
+    }
+  };
 
   if (!currentLocation || (currentLocation.latitude === 0 && currentLocation.longitude === 0)) {
     return (
@@ -156,7 +118,14 @@ const Map = ({ device, apiUrl }) => {
           <Marker
             key={index}
             position={[location.latitude, location.longitude]}
-            icon={historyIcon}
+            icon={L.icon({
+              iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png',
+              shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34],
+              shadowSize: [41, 41]
+            })}
           >
             <Popup>
               <div className="popup-content">
@@ -194,7 +163,14 @@ const Map = ({ device, apiUrl }) => {
           </div>
         </div>
 
-        <div className="map-info-content">
+        <div classL.icon({
+              iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png',
+              shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34],
+              shadowSize: [41, 41]
+            })nfo-content">
           <div className="info-row">
             <span className="info-label">📍 Latitude</span>
             <span className="info-value">{lat.toFixed(6)}</span>
@@ -224,11 +200,17 @@ const Map = ({ device, apiUrl }) => {
               <span className="info-value">{locationHistory.length}</span>
             </div>
           )}
+        </div>
 
         <button className="center-map-btn" onClick={centerOnLocation} title="Center map on your location">
           📍 Find Me
         </button>
-        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Map;
       </div>
     </div>
   );
