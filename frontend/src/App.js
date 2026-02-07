@@ -2,9 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import DeviceList from './components/DeviceList';
 import Map from './components/Map';
+import { API_URL } from './config';
 import './App.css';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 function App() {
   const [devices, setDevices] = useState([]);
