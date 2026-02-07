@@ -303,54 +303,85 @@
       DEVICE_NAME = deviceNameInput;
       localStorage.setItem('deviceName', DEVICE_NAME);
 
+      // Check if geolocation is available
+      if (!('geolocation' in navigator)) {
+        setStatus('❌ Geolocation not supported by this browser', 'error');
+        return;
+      }
+
       // Register device first
       registerDevice().then(() => {
-        if ('geolocation' in navigator) {
-          setStatus('📍 Starting tracking...', 'tracking');
-          
-          watchId = navigator.geolocation.watchPosition(
-            (position) => {
-              const { latitude, longitude, accuracy } = position.coords;
-              
-              // Update UI
-              document.getElementById('latitude').textContent = latitude.toFixed(6);
-              document.getElementById('longitude').textContent = longitude.toFixed(6);
-              document.getElementById('accuracy').textContent = Math.round(accuracy);
-              document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
-              document.getElementById('locationData').classList.add('active');
+        setStatus('📍 Requesting location permission...', 'tracking');
+        
+        // Request permission with high accuracy
+        const options = {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        };
 
-              // Send to server
-              fetch(`${SERVER_URL}/api/locations/update`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  deviceId: DEVICE_ID,
-                  latitude,
-                  longitude,
-                  accuracy
-                })
-              }).catch(err => console.error('Error sending location:', err));
-            },
-            (error) => {
-              console.error('Geolocation error:', error);
+        // First, try to get one location
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            // Permission granted! Now start continuous tracking
+            startContinuousTracking(options);
+          },
+          (error) => {
+            // Permission denied or error
+            if (error.code === error.PERMISSION_DENIED) {
+              setStatus('❌ Location permission denied. Please enable it in browser settings:', 'error');
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+              setStatus('❌ Location data unavailable. Turn on location services.', 'error');
+            } else if (error.code === error.TIMEOUT) {
+              setStatus('❌ Location request timed out. Check signal strength.', 'error');
+            } else {
               setStatus(`❌ ${error.message}`, 'error');
-            },
-            {
-              enableHighAccuracy: true,
-              timeout: 5000,
-              maximumAge: 0
             }
-          );
-
-          isTracking = true;
-          setStatus('✅ Tracking active. Sending location every 10 seconds...', 'tracking');
-          document.getElementById('startBtn').disabled = true;
-          document.getElementById('stopBtn').disabled = false;
-          document.getElementById('deviceName').disabled = true;
-        } else {
-          setStatus('❌ Geolocation not supported', 'error');
-        }
+          },
+          options
+        );
       });
+    }
+
+    function startContinuousTracking(options) {
+      isTracking = true;
+      setStatus('✅ Tracking active. Sending location every 10 seconds...', 'tracking');
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('stopBtn').disabled = false;
+      document.getElementById('deviceName').disabled = true;
+
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude, accuracy } = position.coords;
+          
+          // Update UI
+          document.getElementById('latitude').textContent = latitude.toFixed(6);
+          document.getElementById('longitude').textContent = longitude.toFixed(6);
+          document.getElementById('accuracy').textContent = Math.round(accuracy);
+          document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+          document.getElementById('locationData').classList.add('active');
+
+          // Send to server
+          fetch(`${SERVER_URL}/api/locations/update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              deviceId: DEVICE_ID,
+              latitude,
+              longitude,
+              accuracy
+            })
+          })
+          .then(res => res.json())
+          .then(data => console.log('✅ Location sent:', { latitude, longitude }))
+          .catch(err => console.error('❌ Error sending location:', err));
+        },
+        (error) => {
+          console.error('Tracking error:', error);
+          setStatus(`❌ Tracking error: ${error.message}`, 'error');
+        },
+        options
+      );
     }
 
     function stopTracking() {
