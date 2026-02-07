@@ -243,11 +243,9 @@
   </div>
 
   <script>
-    const SERVER_URL = window.location.hostname === 'localhost' 
-      ? 'http://localhost:5000' 
-      : `http://${window.location.hostname}:5000`;
+    const SERVER_URL = 'https://phone-track-production-16be.up.railway.app';
     
-    document.getElementById('serverAddress').textContent = SERVER_URL.replace('http://', '');
+    document.getElementById('serverAddress').textContent = SERVER_URL.replace('https://', '');
 
     let DEVICE_ID = localStorage.getItem('deviceId');
     let DEVICE_NAME = localStorage.getItem('deviceName') || '';
