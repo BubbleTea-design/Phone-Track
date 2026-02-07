@@ -163,14 +163,7 @@ const Map = ({ device, apiUrl }) => {
           </div>
         </div>
 
-        <div classL.icon({
-              iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png',
-              shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-              iconSize: [25, 41],
-              iconAnchor: [12, 41],
-              popupAnchor: [1, -34],
-              shadowSize: [41, 41]
-            })nfo-content">
+        <div className="map-info-content">
           <div className="info-row">
             <span className="info-label">📍 Latitude</span>
             <span className="info-value">{lat.toFixed(6)}</span>
@@ -205,12 +198,6 @@ const Map = ({ device, apiUrl }) => {
         <button className="center-map-btn" onClick={centerOnLocation} title="Center map on your location">
           📍 Find Me
         </button>
-      </div>
-    </div>
-  );
-};
-
-export default Map;
       </div>
     </div>
   );
