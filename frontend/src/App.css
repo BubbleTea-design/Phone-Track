@@ -60,6 +60,8 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  width: 100%;
+  min-width: 0;
 }
 
 .registration-section {
@@ -199,6 +201,8 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  flex: 1;
+  min-width: 0;
 }
 
 .leaflet-container {
@@ -206,6 +210,8 @@ body {
   height: 100%!important;
   z-index: 1;
   flex: 1;
+  min-width: 0;
+  overflow: hidden!important;
 }
 
 /* Beautiful Map Info Panel - Google Maps Style */
