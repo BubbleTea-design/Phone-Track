@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline } from 'react-leaflet';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import axios from 'axios';
 
@@ -33,6 +33,7 @@ L.Icon.Default.mergeOptions({
 
 const Map = ({ device, apiUrl }) => {
   const [locationHistory, setLocationHistory] = useState([]);
+  const mapRef = useRef(null);
 
   const fetchLocationHistory = useCallback(async () => {
     try {
@@ -47,22 +48,47 @@ const Map = ({ device, apiUrl }) => {
   const currentLocationIcon = L.divIcon({
     html: `<div style="
       background-color: #4285F4;
-      border: 3px solid white;
+      border: 4px solid white;
       border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      box-shadow: 0 0 0 8px rgba(66, 133, 244, 0.2);
+      width: 48px;
+      height: 48px;
+      box-shadow: 0 0 0 12px rgba(66, 133, 244, 0.3), 0 2px 8px rgba(0, 0, 0, 0.3);
       animation: pulse 2s infinite;
-    "></div>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-    popupAnchor: [0, -16],
+      position: relative;
+    "><div style="
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: white;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    "></div></div>`,
+
+  // Auto-center map on current location updates
+  useEffect(() => {
+    if (mapRef.current && currentLocation && currentLocation.latitude && currentLocation.longitude) {
+      const newCenter = [currentLocation.latitude, currentLocation.longitude];
+      if (Math.abs(mapRef.current.getCenter().lat - newCenter[0]) > 0.0001 || 
+          Math.abs(mapRef.current.getCenter().lng - newCenter[1]) > 0.0001) {
+        mapRef.current.setView(newCenter, 17, { animate: true, duration: 1 });
+      }
+    }
+  }, [currentLocation]);
+    iconSize: [48, 48],
+    iconAnchor: [24, 24],
+    popupAnchor: [0, -24],
     className: 'current-location-icon'
   });
 
   useEffect(() => {
     fetchLocationHistory();
-    const interval = setInterval(fetchLocationHistory, 5000);
+    conscenterOnLocation = () => {
+    if (mapRef.current && currentLocation && currentLocation.latitude && currentLocation.longitude) {
+      mapRef.current.setView([currentLocation.latitude, currentLocation.longitude], 17, { animate: true, duration: 1 });
+    }
+  }
     return () => clearInterval(interval);
   }, [fetchLocationHistory]);
 
@@ -89,8 +115,9 @@ const Map = ({ device, apiUrl }) => {
   return (
     <div className="map-container">
       <MapContainer
+        ref={mapRef}
         center={[lat, lng]}
-        zoom={15}
+        zoom={17}
         scrollWheelZoom={true}
         style={{ width: '100%', height: '100%' }}
         className="beautiful-map"
@@ -197,6 +224,10 @@ const Map = ({ device, apiUrl }) => {
               <span className="info-value">{locationHistory.length}</span>
             </div>
           )}
+
+        <button className="center-map-btn" onClick={centerOnLocation} title="Center map on your location">
+          📍 Find Me
+        </button>
         </div>
       </div>
     </div>

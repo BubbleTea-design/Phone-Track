@@ -317,18 +317,42 @@ body {
 /* Pulsing animation for current location marker */
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 8px rgba(66, 133, 244, 0.4);
+    box-shadow: 0 0 0 12px rgba(66, 133, 244, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
   }
   70% {
-    box-shadow: 0 0 0 20px rgba(66, 133, 244, 0);
+    box-shadow: 0 0 0 28px rgba(66, 133, 244, 0), 0 2px 8px rgba(0, 0, 0, 0.3);
   }
   100% {
-    box-shadow: 0 0 0 0px rgba(66, 133, 244, 0);
+    box-shadow: 0 0 0 0px rgba(66, 133, 244, 0), 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 }
 
 .current-location-icon {
   animation: pulse 2s infinite;
+}
+
+.center-map-btn {
+  width: calc(100% - 32px);
+  margin: 12px 16px 16px 16px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #4285F4 0%, #3367D6 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+}
+
+.center-map-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 4px rgba(66, 133, 244, 0.4);
+}
+
+.center-map-btn:hover {
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
 }
 
 .popup-content {
