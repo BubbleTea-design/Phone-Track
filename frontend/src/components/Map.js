@@ -85,7 +85,11 @@ const Map = ({ device, apiUrl }) => {
 
         {/* Accuracy circle */}
         {currentLocation.accuracy && (
-          <Circle5}
+          <Circle
+            center={[lat, lng]}
+            radius={currentLocation.accuracy}
+            fillColor="#667eea"
+            fillOpacity={0.15}
             color="#667eea"
             weight={2}
             dashArray="5, 5"
