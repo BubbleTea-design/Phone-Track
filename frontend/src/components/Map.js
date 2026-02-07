@@ -21,7 +21,7 @@ const historyIcon = L.icon({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
-  popupAnchor: [1, -3, apiUrl4],
+  popupAnchor: [1, -34],
   shadowSize: [41, 41]
 });
 
@@ -41,7 +41,7 @@ const Map = ({ device, apiUrl }) => {
     } catch (err) {
       console.error('Failed to fetch location history:', err);
     }
-  }, [device.deviceId]);
+  }, [device.deviceId, apiUrl]);
 
   useEffect(() => {
     fetchLocationHistory();
@@ -135,7 +135,10 @@ const Map = ({ device, apiUrl }) => {
               <small>{currentLocation.timestamp && new Date(currentLocation.timestamp).toLocaleTimeString()}</small>
             </div>
           </Popup>
-        </Beautiful info panel */}
+        </Marker>
+      </MapContainer>
+
+      {/* Beautiful info panel */}
       <div className="map-info-panel">
         <div className="map-info-header">
           <div className="device-indicator">📱</div>
@@ -175,14 +178,7 @@ const Map = ({ device, apiUrl }) => {
               <span className="info-value">{locationHistory.length}</span>
             </div>
           )}
-        </div>  <strong>Updated:</strong> {new Date(currentLocation.timestamp).toLocaleString()}
-          </p>
-        )}
-        {currentLocation.accuracy && (
-          <p className="accuracy">
-            <strong>Accuracy:</strong> ±{Math.round(currentLocation.accuracy)}m
-          </p>
-        )}
+        </div>
       </div>
     </div>
   );
